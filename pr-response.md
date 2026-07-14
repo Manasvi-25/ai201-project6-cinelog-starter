@@ -12,8 +12,8 @@
 **How I verified:** Ran the full test suite (pytest tests/ -v) — all 4 existing tests still pass. (No test yet directly exercises the duplicate case; that's addressed as part of Comment 3's test coverage / can add one as a stretch test.)
 
 ## Comment 3 — Missing test
-**What I did:**
-**How I verified:**
+**What I did:** Created tests/test_watchlist.py with test_add_to_watchlist_nonexistent_film_raises, modeled directly on test_add_to_collection_nonexistent_film_raises from test_collection.py — same fixture structure (app, sample_user, sample_film) and same assertion pattern (pytest.raises(FilmNotFoundError) with a fake UUID).
+**How I verified:** Ran `pytest tests/test_watchlist.py -v` (passed), then the full suite `pytest tests/ -v` — all 5 tests pass, no regressions.
 
 ## Comment 4 — Default visibility
 **My position:**
