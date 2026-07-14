@@ -89,4 +89,3 @@ class WatchlistEntry(db.Model):
             "date_added": self.date_added.isoformat(),
             "public": self.public,
         }
->>>>>>> caf6b56 (fix: default WatchlistEntry.public to False per visibility decision)
