@@ -8,8 +8,8 @@
 **How I verified:** Searched the project with `Select-String -Recurse -Filter *.py -Pattern "save_to_watchlist"` and confirmed no remaining references. Ran full test suite (pytest tests/ -v) — all 4 existing tests pass.
 
 ## Comment 2 — Deduplication
-**What I did:**
-**How I verified:**
+**What I did:** Added an `AlreadyInWatchlistError` exception class and a duplicate check in `add_to_watchlist()`, following the same pattern as `add_to_collection()` in collection_service.py — query for an existing entry with matching user_id/film_id before creating a new one, and raise if found.
+**How I verified:** Ran the full test suite (pytest tests/ -v) — all 4 existing tests still pass. (No test yet directly exercises the duplicate case; that's addressed as part of Comment 3's test coverage / can add one as a stretch test.)
 
 ## Comment 3 — Missing test
 **What I did:**
