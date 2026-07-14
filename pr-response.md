@@ -26,9 +26,9 @@
 **Engagement with reviewer's point:** I agree with the maintainer's reasoning that most users want to see what they added recently. The main downside is that alphabetical sorting can be helpful for very large watchlists or when trying to quickly check if a specific movie is already there — but I think recency is the better default for the common use case, and alphabetical could be offered later as an optional view instead of replacing the default.
 
 ## Comment 6 — Rebase
-**What conflicted:**
-**How I resolved it:**
-**How I verified no conflict remains:**
+**What conflicted:** models.py had a merge conflict because the WatchlistEntry model (added on feature/watchlist) didn't exist on main, which had migrated Film.id and all foreign keys from Integer to UUID (String(36)) in a separate refactor. Git couldn't auto-merge the addition, and WatchlistEntry.film_id was still typed as db.Integer.
+**How I resolved it:** Kept the WatchlistEntry class and updated film_id from db.Column(db.Integer, ...) to db.Column(db.String(36), ...) to match the new UUID foreign key type used by Film.id and CollectionEntry.film_id.
+**How I verified no conflict remains:** Ran git log --oneline to confirm a clean, linear history with no merge commits. Ran pytest tests/ -v — all tests pass after resolving the conflict and updating the field type.
 
 ## PR Description
 <!-- Written at the end — feature overview, design decisions, manual testing steps -->
