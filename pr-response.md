@@ -21,9 +21,9 @@
 **Tradeoff acknowledged:** Fewer public watchlists means less content for discovery and recommendations. However, I think that's a better tradeoff than surprising users by making their watchlist visible without them realizing it. Users who want to participate in the social aspect of the app can still easily change the visibility to public, while users who value privacy don't have to opt out first. I could also see a more flexible system in the future (private, followers-only, public), but with the current boolean design, defaulting to private is the safer and more user-friendly choice.
 
 ## Comment 5 — Sort order
-**My position:**
-**Reasoning:**
-**Engagement with reviewer's point:**
+**My position:** Agree with the maintainer — default to date_added.desc() instead of alphabetical.
+**Reasoning:** For a watchlist, recency is what most users are looking for since people usually add movies after getting a recommendation, watching a trailer, or hearing about a new release. When they come back later, they're more likely to want to find those recently added movies than browse the entire list alphabetically. This also keeps the watchlist consistent with the watched collection, which is already sorted by date_added.desc(), making the app's behavior more predictable across features.
+**Engagement with reviewer's point:** I agree with the maintainer's reasoning that most users want to see what they added recently. The main downside is that alphabetical sorting can be helpful for very large watchlists or when trying to quickly check if a specific movie is already there — but I think recency is the better default for the common use case, and alphabetical could be offered later as an optional view instead of replacing the default.
 
 ## Comment 6 — Rebase
 **What conflicted:**
