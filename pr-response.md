@@ -29,6 +29,9 @@
 **What conflicted:** models.py had a merge conflict because the WatchlistEntry model (added on feature/watchlist) didn't exist on main, which had migrated Film.id and all foreign keys from Integer to UUID (String(36)) in a separate refactor. Git couldn't auto-merge the addition, and WatchlistEntry.film_id was still typed as db.Integer.
 **How I resolved it:** Kept the WatchlistEntry class and updated film_id from db.Column(db.Integer, ...) to db.Column(db.String(36), ...) to match the new UUID foreign key type used by Film.id and CollectionEntry.film_id.
 **How I verified no conflict remains:** Ran git log --oneline to confirm a clean, linear history with no merge commits. Ran pytest tests/ -v — all tests pass after resolving the conflict and updating the field type.
-
+g
 ## PR Description
 <!-- Written at the end — feature overview, design decisions, manual testing steps -->
+
+## Commit History
+![git log screenshot](commit-history.png)
