@@ -1,7 +1,14 @@
 # PR Response Doc — CineLog Watchlist Feature
 
 ## AI Usage
-<!-- Fill in at the end — how you used AI tools during this project -->
+I used AI (Claude) throughout this project in a few specific ways:
+ 
+- **Codebase orientation:** Before making changes, I had AI help me understand collection_service.py's patterns (e.g. how add_to_collection() handles deduplication) so I could follow the same structure in watchlist_service.py rather than inventing a new approach.
+- **Stress-testing design arguments (Comments 4 and 5):** For the default visibility and sort order decisions, I wrote my own position and reasoning first, then used AI to check my draft for gaps — specifically whether I was acknowledging real tradeoffs and directly engaging with the maintainer's stated reasoning rather than just asserting a preference. This helped me sharpen the Comment 5 response to more directly address the maintainer's "most users want recency" point, and to explicitly note the consistency with the existing collection sort order.
+- **Merge conflict guidance:** I used AI to help interpret git conflict markers during the Comment 6 rebase (understanding what the "current" vs "incoming" sections meant in models.py) and to talk through the resolution — but the actual decision (updating film_id to the UUID type) was based on reading the surrounding code myself.
+- **Commit hygiene:** I used AI to review my commit history for conventional commit format issues before finalizing — it flagged one early commit ("added watchlist model and endpoint fixed a bug more changes") as non-conventional and bundled, which I fixed via `git rebase -i`.
+The actual code changes, test logic, and final wording of my design decision arguments (Comments 4 and 5) are my own — AI was used for orientation, review, and catching gaps, not for writing the reasoning itself.
+ 
 
 ## Comment 1 — Rename
 *What I did:** Renamed `save_to_watchlist()` to `add_to_watchlist()` in services/watchlist_service.py to match the project's verb_to_noun convention (consistent with add_to_collection()). Updated the import and call site in routes/watchlist/watchlist.py.
@@ -29,9 +36,51 @@
 **What conflicted:** models.py had a merge conflict because the WatchlistEntry model (added on feature/watchlist) didn't exist on main, which had migrated Film.id and all foreign keys from Integer to UUID (String(36)) in a separate refactor. Git couldn't auto-merge the addition, and WatchlistEntry.film_id was still typed as db.Integer.
 **How I resolved it:** Kept the WatchlistEntry class and updated film_id from db.Column(db.Integer, ...) to db.Column(db.String(36), ...) to match the new UUID foreign key type used by Film.id and CollectionEntry.film_id.
 **How I verified no conflict remains:** Ran git log --oneline to confirm a clean, linear history with no merge commits. Ran pytest tests/ -v — all tests pass after resolving the conflict and updating the field type.
-g
+
 ## PR Description
-<!-- Written at the end — feature overview, design decisions, manual testing steps -->
+This PR adds a watchlist feature to CineLog, allowing users to save films they want to watch later, separate from their collection of films they've already watched. Users can add films to their watchlist, view their watchlist, and the feature prevents duplicate entries and invalid film IDs.
+ 
+**Design decisions:**
+- **Default visibility:** Watchlists default to private (`public=False`), since a watchlist reflects what a user plans to watch, not necessarily something they want to share. Making it private by default avoids exposing a user's watchlist before they choose to share it.
+- **Sort order:** Watchlists are sorted by date added (most recent first). People usually add movies after getting a recommendation or seeing a trailer, so showing the newest additions first makes it easier to find them again. This also keeps the behavior consistent with the collection feature.
+**Manual testing steps:**
+ 
+1. Run the automated test suite to verify core service-layer behavior:
+```bash
+   pytest tests/ -v
+```
+   This confirms the rename, deduplication, and nonexistent-film handling all work as expected.
+ 
+2. To manually test via the API, since the app has no seed data or user-creation endpoint, create a test user and film directly using Flask's app context (in a Python shell):
+```python
+   from app import create_app, db
+   from models import User, Film
+ 
+   app = create_app()
+   with app.app_context():
+       db.create_all()
+       user = User(username="testuser", email="test@example.com")
+       film = Film(title="Whiplash", year=2014, genre="Drama")
+       db.session.add_all([user, film])
+       db.session.commit()
+       print("user_id:", user.id)
+       print("film_id:", film.id)
+```
+ 
+3. Start the app: `python app.py`
+4. Add the film to the user's watchlist:
+```bash
+   curl -X POST http://127.0.0.1:5000/watchlist/<user_id>/add -H "Content-Type: application/json" -d "{\"film_id\":\"<film_id>\"}"
+```
+   Confirm a 201 response containing the new watchlist entry, with `public: false` by default.
+ 
+5. Try adding the same film again — confirm this raises an error instead of creating a duplicate entry.
+6. Try adding a nonexistent film_id (e.g. `00000000-0000-0000-0000-000000000000`) — confirm this raises an error rather than succeeding.
+7. View the user's watchlist:
+```bash
+   curl http://127.0.0.1:5000/watchlist/<user_id>
+```
+   Confirm the film's full details are returned (title, genre, year, etc.), sorted by most recently added first.
 
 ## Commit History
 ![git log screenshot](commit-history.png)
